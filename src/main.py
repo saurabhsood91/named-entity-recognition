@@ -59,10 +59,69 @@ def GetObservationCounts():
 
     for (word, tag) in observation_counts:
         observation_counts[(word, tag)] = float(observation_counts[(word, tag)]) / tag_counts[tag]
-    # print observation_counts
     return observation_counts
+
+def viterbi(observation, transition_probabilities, observation_likelihoods):
+    obs_words = observation.split()
+    obs_length = len(obs_words)
+    viterbi_table = [[0, 0, 0] for i in xrange(0, obs_length)]
+    backpointers = [[0, 0, 0] for i in xrange(0, obs_length)]
+
+    # Initialization
+    if (obs_words[0], "I") in observation_likelihoods:
+        viterbi_table[0][0] = observation_likelihoods[(obs_words[0], "I")]
+    else:
+        viterbi_table[0][0] = 0
+    if (obs_words[0], "O") in observation_likelihoods:
+        viterbi_table[0][1] = observation_likelihoods[(obs_words[0], "O")]
+    else:
+        viterbi_table[0][1] = 0
+    if (obs_words[0], "I") in observation_likelihoods:
+        viterbi_table[0][2] = observation_likelihoods[(obs_words[0], "B")]
+    else:
+        viterbi_table[0][2] = 0
+
+    # Continuation step
+    for t in xrange(1, len(obs_words)):
+        for i in [0, 1, 2]:
+            if i == 0:
+                s = "I"
+            elif i == 1:
+                s = "O"
+            else:
+                s == "B"
+            if (obs_words[t], s) in observation_likelihoods:
+                prob = observation_likelihoods[(obs_words[t], s)]
+            else:
+                prob = 0
+            base_0 = viterbi_table[t - 1][0] * transition_probabilities[0][i]
+            base_1 = viterbi_table[t - 1][1] * transition_probabilities[1][i]
+            base_2 = viterbi_table[t - 1][2] * transition_probabilities[2][i]
+            incoming_0 = base_0 * prob
+            incoming_1 = base_1 * prob
+            incoming_2 = base_2 * prob
+            # viterbi_table[t][i] = max(incoming_0, incoming_1, incoming_2)
+
+            if incoming_0 > incoming_1 and incoming_0 > incoming_2:
+                viterbi_table[t][i] = incoming_0
+            elif incoming_1 > incoming_0 and incoming_1 > incoming_2:
+                viterbi_table[t][i] = incoming_1
+            elif incoming_2 > incoming_0 and incoming_2 > incoming_1:
+                viterbi_table[t][i] = incoming_2
+
+            # compute backpointers
+            if base_0 > base_1 and base_0 > base_2:
+                backpointers[t][i] = 0
+            if base_1 > base_0 and base_1 > base_2:
+                backpointers[t][i] = 1
+            if base_2 > base_0 and base_2 > base_1:
+                backpointers[t][i] = 2
+
+    print backpointers
+    print viterbi_table
 
 if __name__ == "__main__":
     transition_probabilities = ComputeTransitionProbabilities()
     # ComputeTransitionProbabilities()
     observation_likelihoods = GetObservationCounts()
+    viterbi("Comparison with alkaline phosphatases and 5-nucleotidase", transition_probabilities, observation_likelihoods)
