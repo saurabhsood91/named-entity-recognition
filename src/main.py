@@ -40,6 +40,8 @@ def ComputeTransitionProbabilities():
 
 def GetObservationCounts():
     observation_counts = {}
+    # tag_counts = {"I": 0, "O": 0, "B": 0}
+    word_counts = {}
     with open("gene.train.processed.txt") as train_file:
         lines = train_file.readlines()
     for line in lines:
@@ -48,9 +50,19 @@ def GetObservationCounts():
             observation_counts[(word, tag)] += 1
         else:
             observation_counts[(word, tag)] = 1
+        if word in word_counts:
+            word_counts[word] += 1
+        else:
+            word_counts[word] = 1
+        # tag_counts[tag] += 1
+    # print tag_counts
+
+    for (word, tag) in observation_counts:
+        observation_counts[(word, tag)] = float(observation_counts[(word, tag)]) / word_counts[word]
     # print observation_counts
+    return observation_counts
 
 if __name__ == "__main__":
-    transition_counts = ComputeTransitionProbabilities()
+    transition_probabilities = ComputeTransitionProbabilities()
     # ComputeTransitionProbabilities()
-    GetObservationCounts()
+    observation_likelihoods = GetObservationCounts()
