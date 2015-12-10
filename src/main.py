@@ -26,9 +26,21 @@ def ComputeTransitionProbabilities():
         elif curr_tag == "B":
             y = 2
 
-    return transition_counts[x][y] += 1
+    return transition_counts
     # print transition_counts
 
+def GetObservationCounts():
+    observation_counts = {}
+    with open("gene.train.processed.txt") as train_file:
+        lines = train_file.readlines()
+    for line in lines:
+        word, tag = line.split()
+        if (word, tag) in observation_counts:
+            observation_counts[(word, tag)] += 1
+        else:
+            observation_counts[(word, tag)] = 1
+    # print observation_counts
 
 if __name__ == "__main__":
     transition_counts = ComputeTransitionProbabilities()
+    GetObservationCounts()
