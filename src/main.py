@@ -25,7 +25,16 @@ def ComputeTransitionProbabilities():
             y = 1
         elif curr_tag == "B":
             y = 2
+        transition_counts[x][y] += 1
+    i_counts = sum(transition_counts[0])
+    o_counts = sum(transition_counts[1])
+    b_counts = sum(transition_counts[2])
 
+    transition_counts[0] = [float(x) / i_counts for x in transition_counts[0]]
+    transition_counts[1] = [float(x) / o_counts for x in transition_counts[1]]
+    transition_counts[2] = [float(x) / b_counts for x in transition_counts[2]]
+
+    # print transition_counts
     return transition_counts
     # print transition_counts
 
@@ -43,4 +52,5 @@ def GetObservationCounts():
 
 if __name__ == "__main__":
     transition_counts = ComputeTransitionProbabilities()
+    # ComputeTransitionProbabilities()
     GetObservationCounts()
