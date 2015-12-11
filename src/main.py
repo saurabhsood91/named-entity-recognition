@@ -115,11 +115,11 @@ def viterbi(observation, transition_probabilities, observation_likelihoods):
             if base_2 > base_0 and base_2 > base_1:
                 backpointers[t][i] = 2
 
-    # print backpointers
-    print viterbi_table
+    print backpointers
+    # print viterbi_table
     tags = []
     arr = viterbi_table[-1]
-    if arr[0] > arr[1] and arr[0] > arr[2]:
+    if arr[0] >= arr[1] and arr[0] >= arr[2]:
         tags.append("I")
         state = 0
     elif arr[1] > arr[0] and arr[1] > arr[2]:
