@@ -88,15 +88,15 @@ def viterbi(observation, transition_probabilities, observation_likelihoods):
     if (obs_words[0], "I") in observation_likelihoods:
         viterbi_table[0][0] = observation_likelihoods[(obs_words[0], "I")]
     else:
-        viterbi_table[0][0] = 0
+        viterbi_table[0][0] = observation_likelihoods[("UNK", "I")]
     if (obs_words[0], "O") in observation_likelihoods:
         viterbi_table[0][1] = observation_likelihoods[(obs_words[0], "O")]
     else:
-        viterbi_table[0][1] = 0
+        viterbi_table[0][1] = observation_likelihoods[("UNK", "O")]
     if (obs_words[0], "B") in observation_likelihoods:
         viterbi_table[0][2] = observation_likelihoods[(obs_words[0], "B")]
     else:
-        viterbi_table[0][2] = 0
+        viterbi_table[0][2] = observation_likelihoods[("UNK", "B")]
 
     # Continuation step
     for t in xrange(1, len(obs_words)):
