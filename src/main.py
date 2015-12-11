@@ -1,4 +1,6 @@
 #! /usr/bin/python
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 def ComputeTransitionProbabilities():
     transition_counts = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -74,7 +76,7 @@ def GetObservationCounts():
     # print observation_counts_unk[('UNK', 'I')]
     # print observation_counts_unk[('UNK', 'O')]
     # print observation_counts_unk[('UNK', 'B')]
-    return observation_counts
+    return observation_counts_unk
 
 def viterbi(observation, transition_probabilities, observation_likelihoods):
     obs_words = observation.split()
@@ -108,7 +110,7 @@ def viterbi(observation, transition_probabilities, observation_likelihoods):
             if (obs_words[t], s) in observation_likelihoods:
                 prob = observation_likelihoods[(obs_words[t], s)]
             else:
-                prob = 0
+                prob = observation_likelihoods[('UNK', s)]
             # for j in xrange(0, 3):
             #     print viterbi_table[t - 1][j], " ", transition_probabilities[j][i]
             # print ""
@@ -130,8 +132,8 @@ def viterbi(observation, transition_probabilities, observation_likelihoods):
             if base_2 > base_0 and base_2 > base_1:
                 backpointers[t][i] = 2
 
-    # print backpointers
-    # print viterbi_table
+    # pp.pprint(zip(*backpointers))
+    # pp.pprint(zip(*viterbi_table))
     tags = []
     arr = viterbi_table[-1]
     if arr[0] >= arr[1] and arr[0] >= arr[2]:
@@ -157,6 +159,7 @@ def viterbi(observation, transition_probabilities, observation_likelihoods):
     tags.reverse()
     print observation
     print tags
+    # exit(1)
 
 def ReadTestFile():
     with open("test.txt") as test_file:
