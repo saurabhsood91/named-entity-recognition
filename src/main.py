@@ -57,8 +57,23 @@ def GetObservationCounts():
         tag_counts[tag] += 1
     # print tag_counts
 
+    observation_counts_unk = {('UNK', 'I'): 0, ('UNK', 'O'): 0, ('UNK', 'B'): 0}
     for (word, tag) in observation_counts:
-        observation_counts[(word, tag)] = float(observation_counts[(word, tag)]) / tag_counts[tag]
+        count = observation_counts[(word, tag)]
+        if count < 3:
+            observation_counts_unk[('UNK', tag)] += count
+        else:
+            observation_counts_unk[(word, tag)] = count
+
+    print observation_counts_unk[('UNK', 'I')]
+    print observation_counts_unk[('UNK', 'O')]
+    print observation_counts_unk[('UNK', 'B')]
+
+    for (word, tag) in observation_counts_unk:
+        observation_counts_unk[(word, tag)] = float(observation_counts_unk[(word, tag)]) / tag_counts[tag]
+    print observation_counts_unk[('UNK', 'I')]
+    print observation_counts_unk[('UNK', 'O')]
+    print observation_counts_unk[('UNK', 'B')]
     return observation_counts
 
 def viterbi(observation, transition_probabilities, observation_likelihoods):
