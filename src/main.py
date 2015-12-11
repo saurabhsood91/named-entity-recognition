@@ -4,13 +4,17 @@ pp = pprint.PrettyPrinter(indent=4)
 
 def ComputeTransitionProbabilities():
     transition_counts = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    with open("gene.train.processed.txt") as train_file:
+    with open("gene.train-1.txt") as train_file:
         lines = train_file.readlines()
     prev = 0
     curr = 1
     while curr < len(lines):
         line1 = lines[prev]
         line2 = lines[curr]
+        if line2 == "\n":
+            curr += 2
+            prev += 2
+            continue
         prev_tag = line1.split()[1]
         curr_tag = line2.split()[1]
         # print prev_tag, " ", curr_tag
@@ -78,7 +82,9 @@ def GetObservationCounts():
     # print observation_counts_unk[('UNK', 'B')]
     return observation_counts_unk
 
-def viterbi(observation, transition_probabilities, observation_likelihoods):
+def viterbi(observation_list, transition_probabilities, observation_likelihoods):
+    observation = " ".join(observation_list)
+    # print observation
     obs_words = observation.split()
     obs_length = len(obs_words)
     viterbi_table = [[0, 0, 0] for i in xrange(0, obs_length)]
@@ -157,8 +163,14 @@ def viterbi(observation, transition_probabilities, observation_likelihoods):
             state = 2
             tags.append("B")
     tags.reverse()
-    print observation
-    print tags
+    # print observation
+    # print tags
+    # print len(observation_list)
+    # print len(tags)
+    for i in xrange(0, len(observation_list)):
+        print observation_list[i], "\t", tags[i]
+    print
+    # print "\n"
     # exit(1)
 
 def ReadTestFile():
@@ -182,5 +194,5 @@ if __name__ == "__main__":
     observation_likelihoods = GetObservationCounts()
     observations = ReadTestFile()
     for element in observations:
-        viterbi(" ".join(element), transition_probabilities, observation_likelihoods)
+        viterbi(element, transition_probabilities, observation_likelihoods)
     # viterbi("Comparison with alkaline phosphatases", transition_probabilities, observation_likelihoods)
