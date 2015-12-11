@@ -60,20 +60,20 @@ def GetObservationCounts():
     observation_counts_unk = {('UNK', 'I'): 0, ('UNK', 'O'): 0, ('UNK', 'B'): 0}
     for (word, tag) in observation_counts:
         count = observation_counts[(word, tag)]
-        if count < 3:
+        if count <= 1:
             observation_counts_unk[('UNK', tag)] += count
         else:
             observation_counts_unk[(word, tag)] = count
 
-    print observation_counts_unk[('UNK', 'I')]
-    print observation_counts_unk[('UNK', 'O')]
-    print observation_counts_unk[('UNK', 'B')]
+    # print observation_counts_unk[('UNK', 'I')]
+    # print observation_counts_unk[('UNK', 'O')]
+    # print observation_counts_unk[('UNK', 'B')]
 
     for (word, tag) in observation_counts_unk:
         observation_counts_unk[(word, tag)] = float(observation_counts_unk[(word, tag)]) / tag_counts[tag]
-    print observation_counts_unk[('UNK', 'I')]
-    print observation_counts_unk[('UNK', 'O')]
-    print observation_counts_unk[('UNK', 'B')]
+    # print observation_counts_unk[('UNK', 'I')]
+    # print observation_counts_unk[('UNK', 'O')]
+    # print observation_counts_unk[('UNK', 'B')]
     return observation_counts
 
 def viterbi(observation, transition_probabilities, observation_likelihoods):
@@ -130,7 +130,7 @@ def viterbi(observation, transition_probabilities, observation_likelihoods):
             if base_2 > base_0 and base_2 > base_1:
                 backpointers[t][i] = 2
 
-    print backpointers
+    # print backpointers
     # print viterbi_table
     tags = []
     arr = viterbi_table[-1]
@@ -155,10 +155,29 @@ def viterbi(observation, transition_probabilities, observation_likelihoods):
             state = 2
             tags.append("B")
     tags.reverse()
+    print observation
     print tags
+
+def ReadTestFile():
+    with open("test.txt") as test_file:
+        observations = []
+        words = []
+        for line in test_file:
+            if line == "\n":
+                observations.append(words)
+                words = []
+            else:
+                word = line.split()[0]
+                words.append(word)
+                # print line.split()
+        # print observations[0]
+        return observations
 
 if __name__ == "__main__":
     transition_probabilities = ComputeTransitionProbabilities()
     # ComputeTransitionProbabilities()
     observation_likelihoods = GetObservationCounts()
-    viterbi("Comparison with alkaline phosphatases", transition_probabilities, observation_likelihoods)
+    observations = ReadTestFile()
+    for element in observations:
+        viterbi(" ".join(element), transition_probabilities, observation_likelihoods)
+    # viterbi("Comparison with alkaline phosphatases", transition_probabilities, observation_likelihoods)
