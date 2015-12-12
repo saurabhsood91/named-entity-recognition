@@ -3,7 +3,7 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 def ComputeTransitionProbabilities():
-    transition_counts = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    transition_counts = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
     with open("gene.train-1.txt") as train_file:
         lines = train_file.readlines()
     prev = 0
@@ -12,11 +12,15 @@ def ComputeTransitionProbabilities():
         line1 = lines[prev]
         line2 = lines[curr]
         if line2 == "\n":
-            curr += 2
-            prev += 2
-            continue
-        prev_tag = line1.split()[1]
-        curr_tag = line2.split()[1]
+            curr_tag = "BEG"
+        else:
+            curr_tag = line2.split()[1]
+        if line1 == "\n":
+            prev_tag = "BEG"
+        else:
+            prev_tag = line1.split()[1]
+        # prev_tag = line1.split()[1]
+        # curr_tag = line2.split()[1]
         # print prev_tag, " ", curr_tag
         prev += 1
         curr += 1
@@ -27,24 +31,33 @@ def ComputeTransitionProbabilities():
             x = 1
         elif prev_tag == "B":
             x = 2
+        elif prev_tag == "BEG":
+            x = 3
         if curr_tag == "O":
             y = 1
         elif curr_tag == "B":
             y = 2
+        elif curr_tag == "BEG":
+            y = 3
+        # print x, y
+        # print transition_counts
         transition_counts[x][y] += 1
     i_counts = sum(transition_counts[0])
     o_counts = sum(transition_counts[1])
     b_counts = sum(transition_counts[2])
-
+    beg_counts = sum(transition_counts[3])
+    # pp.pprint(transition_counts)
+    # print transition_counts[4]
     transition_counts[0] = [float(x) / i_counts for x in transition_counts[0]]
     transition_counts[1] = [float(x) / o_counts for x in transition_counts[1]]
     transition_counts[2] = [float(x) / b_counts for x in transition_counts[2]]
+    transition_counts[3] = [float(x) / beg_counts for x in transition_counts[3]]
 
-    # print transition_counts
+    # pp.pprint(transition_counts)
     return transition_counts
     # print transition_counts
 
-def GetObservationCounts():
+def GetObservationCountsUnk():
     observation_counts = {}
     tag_counts = {"I": 0, "O": 0, "B": 0}
     # word_counts = {}
@@ -82,6 +95,31 @@ def GetObservationCounts():
     # print observation_counts_unk[('UNK', 'B')]
     return observation_counts_unk
 
+def GetObservationCounts():
+    observation_counts = {}
+    tag_counts = {"I": 0, "O": 0, "B": 0}
+    # word_counts = {}
+    with open("gene.train.processed.txt") as train_file:
+        lines = train_file.readlines()
+    for line in lines:
+        word, tag = line.split()
+        if (word, tag) in observation_counts:
+            observation_counts[(word, tag)] += 1
+        else:
+            observation_counts[(word, tag)] = 1
+        # if word in word_counts:
+        #     word_counts[word] += 1
+        # else:
+        #     word_counts[word] = 1
+        tag_counts[tag] += 1
+
+    for (word, tag) in observation_counts:
+        observation_counts[(word, tag)] = float(observation_counts[(word, tag)]) / tag_counts[tag]
+    # print observation_counts_unk[('UNK', 'I')]
+    # print observation_counts_unk[('UNK', 'O')]
+    # print observation_counts_unk[('UNK', 'B')]
+    return observation_counts
+
 def viterbi(observation_list, transition_probabilities, observation_likelihoods):
     observation = " ".join(observation_list)
     # print observation
@@ -92,17 +130,20 @@ def viterbi(observation_list, transition_probabilities, observation_likelihoods)
 
     # Initialization
     if (obs_words[0], "I") in observation_likelihoods:
-        viterbi_table[0][0] = observation_likelihoods[(obs_words[0], "I")]
+        viterbi_table[0][0] = observation_likelihoods[(obs_words[0], "I")] * transition_probabilities[3][0]
     else:
-        viterbi_table[0][0] = observation_likelihoods[("UNK", "I")]
+        # viterbi_table[0][0] = observation_likelihoods[("UNK", "I")] * transition_probabilities[3][0]
+        viterbi_table[0][0] = 0
     if (obs_words[0], "O") in observation_likelihoods:
-        viterbi_table[0][1] = observation_likelihoods[(obs_words[0], "O")]
+        viterbi_table[0][1] = observation_likelihoods[(obs_words[0], "O")] * transition_probabilities[3][1]
     else:
-        viterbi_table[0][1] = observation_likelihoods[("UNK", "O")]
+        # viterbi_table[0][1] = observation_likelihoods[("UNK", "O")] * transition_probabilities[3][1]
+        viterbi_table[0][1] = 0
     if (obs_words[0], "B") in observation_likelihoods:
-        viterbi_table[0][2] = observation_likelihoods[(obs_words[0], "B")]
+        viterbi_table[0][2] = observation_likelihoods[(obs_words[0], "B")] * transition_probabilities[3][2]
     else:
-        viterbi_table[0][2] = observation_likelihoods[("UNK", "B")]
+        # viterbi_table[0][2] = observation_likelihoods[("UNK", "B")] * transition_probabilities[3][2]
+        viterbi_table[0][2]
 
     # Continuation step
     for t in xrange(1, len(obs_words)):
@@ -116,7 +157,8 @@ def viterbi(observation_list, transition_probabilities, observation_likelihoods)
             if (obs_words[t], s) in observation_likelihoods:
                 prob = observation_likelihoods[(obs_words[t], s)]
             else:
-                prob = observation_likelihoods[('UNK', s)]
+                # prob = observation_likelihoods[('UNK', s)]
+                prob = 0
             # for j in xrange(0, 3):
             #     print viterbi_table[t - 1][j], " ", transition_probabilities[j][i]
             # print ""
@@ -142,13 +184,17 @@ def viterbi(observation_list, transition_probabilities, observation_likelihoods)
     # pp.pprint(zip(*viterbi_table))
     tags = []
     arr = viterbi_table[-1]
-    if arr[0] >= arr[1] and arr[0] >= arr[2]:
+
+    arr0 = arr[0] * transition_probabilities[0][3]
+    arr1 = arr[1] * transition_probabilities[1][3]
+    arr2 = arr[2] * transition_probabilities[2][3]
+    if arr0 >= arr1 and arr0 >= arr2:
         tags.append("I")
         state = 0
-    elif arr[1] > arr[0] and arr[1] > arr[2]:
+    elif arr1 > arr0 and arr1 > arr2:
         tags.append("O")
         state = 1
-    elif arr[2] > arr[0] and arr[2] > arr[1]:
+    elif arr2 > arr0 and arr2 > arr1:
         tags.append("B")
         state = 2
 
