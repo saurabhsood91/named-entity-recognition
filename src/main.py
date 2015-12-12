@@ -232,6 +232,8 @@ def ReadTestFile():
                 words.append(word)
                 # print line.split()
         # print observations[0]
+        if len(words) > 0:
+            observations.append(words)
         return observations
 
 if __name__ == "__main__":

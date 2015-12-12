@@ -331,3 +331,15 @@ all 	O
 subjects 	O
 . 	O
 
+Gamma 	B
+glutamyl 	I
+transpeptidase 	I
+( 	I
+GGTP 	I
+) 	I
+activity 	I
+in 	I
+the 	I
+seminal 	I
+fluid 	I
+
